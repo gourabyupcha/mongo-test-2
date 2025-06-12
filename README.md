@@ -13,3 +13,5 @@ bun run server.js
 ```
 
 This project was created using `bun init` in bun v1.1.9. [Bun](https://bun.sh) is a fast all-in-one JavaScript runtime.
+
+MONGO_URI=mongodb+srv://gourabyupcha:DzuaVJEuJ5ppT9Z9@cluster0.mutums3.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
