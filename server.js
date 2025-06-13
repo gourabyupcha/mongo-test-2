@@ -2,13 +2,13 @@ require('dotenv').config();
 const express = require('express');
 const app = express();
 
-const { connectToDatabase } = require('./db');
+const { connectToDatabase } = require('./db/db');
 const bookingRoute = require('./routes/bookings');
 
 // 🧠 Redis & Rate Limit
 const rateLimit = require('express-rate-limit');
 const {RedisStore} = require('rate-limit-redis');
-const redisClient = require('./cache'); // Make sure this exports your Redis client instance
+const redisClient = require('./utils/cache'); // Make sure this exports your Redis client instance
 
 // Apply JSON parser
 app.use(express.json());
@@ -26,9 +26,17 @@ const limiter = rateLimit({
     status: 429,
     error: 'Too many requests. Please try again later.',
   },
+  keyGenerator: (req, res) => {
+    return (
+      req.ip ||
+      req.headers['x-forwarded-for'] ||
+      req.connection?.remoteAddress ||
+      'internal-service' // fallback key
+    );
+  },
 });
 
-// app.use(limiter); // Apply rate limit globally (or only to /api/services if preferred)
+app.use(limiter)
 
 // Main route
 app.use('/api/bookings', bookingRoute);

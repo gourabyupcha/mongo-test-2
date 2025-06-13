@@ -1,9 +1,9 @@
 
-const {getServiceById} = require('../utils')
+const {getServiceById} = require('../utils/utils')
 const express = require('express');
 const router = express.Router();
-const { getBookingCollection } = require('../db');
-const redisClient = require('../cache');
+const { getBookingCollection } = require('../db/db');
+const redisClient = require('../utils/cache');
 const crypto = require('crypto'); // For creating cache keys
 
 
@@ -14,13 +14,15 @@ router.post('/', async (req, res) => {
         sellerId,
         consumerId,
         bookingDate,
-        timeSlot
+        timeSlot,
+        consumerEmail
     } = req.body;
 
     // Validate required fields
     const missing = [];
     if (!sellerId) missing.push("sellerId");
     if (!consumerId) missing.push("consumerId");
+    if (!consumerEmail) missing.push("consumerEmail");
     if (!bookingDate) missing.push("bookingDate");
     if (!timeSlot) missing.push("timeSlot");
 
@@ -33,18 +35,21 @@ router.post('/', async (req, res) => {
         const bookingsCollection = getBookingCollection(); // Assume this is defined
 
         // Fetch the service to extract details
-        const service = await getServiceById(sellerId);
-        if (!service) {
+        const service_res = await getServiceById(sellerId);
+        if (!service_res) {
             return res.status(404).json({ message: "Service not found" });
         }
+
+        const service = service_res.results[0]
 
         // Construct the booking entry
         const booking = {
             consumerId,
+            consumerEmail,
             sellerId: service.sellerId,
             bookingDate: new Date(bookingDate),
             timeSlot,
-            status: "pending",
+            status: "requested",
             amount: service.price,
             currency: service.currency || "USD",
             payment: {
@@ -64,9 +69,6 @@ router.post('/', async (req, res) => {
         res.status(500).json({ message: "Internal server error" });
     }
 });
-
-
-
 
 
 module.exports = router;

@@ -1,7 +1,7 @@
 // addService.js
 
-import { data } from './data';
-import { data2 } from './data2';
+import { data } from '../utils/data';
+import { data2 } from '../utils/data2';
 
 const fetch = require('node-fetch'); // Only required if you're using Node <18
 
